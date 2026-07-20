@@ -1,0 +1,17 @@
+# user's local config (copy of config.example.sh)
+config/config.sh
+
+# python
+__pycache__/
+*.pyc
+
+# editor/OS
+.DS_Store
+*.swp
+
+# never commit data or logs
+*.fastq.gz
+*.fq.gz
+*.fna.gz
+*.part
+logs/

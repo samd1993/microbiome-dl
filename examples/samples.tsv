@@ -1,0 +1,6 @@
+sample_id	host_species	genus	family	order	repo	project	run_accessions
+EX_human_gut_1	Homo sapiens	Homo	Hominidae	Primates	ENA	PRJEBEXAMPLE	ERR0000001
+EX_human_skin_1	Homo sapiens	Homo	Hominidae	Primates	ENA	PRJEBEXAMPLE	ERR0000002
+EX_mouse_gut_1	Mus musculus	Mus	Muridae	Rodentia	SRA	PRJNAEXAMPLE	SRR0000003
+EX_honeybee_gut_1	Apis mellifera	Apis	Apidae	Hymenoptera	ENA	PRJNAEXAMPLE	SRR0000004;SRR0000005
+EX_cattle_rumen_1	Bos taurus	Bos	Bovidae	Artiodactyla	SRA	PRJNAEXAMPLE	SRR0000006

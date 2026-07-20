@@ -1,0 +1,12 @@
+name: metagenome-dl
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.9
+  - fastq-dl>=2.0      # ENA-first FASTQ downloader with SRA fallback + md5
+  - sra-tools          # prefetch / fasterq-dump (SRA fallback)
+  - aria2              # fast, resumable parallel downloads (genomes)
+  - pigz               # parallel gzip integrity checks
+  - curl
+  - wget
