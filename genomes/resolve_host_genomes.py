@@ -21,10 +21,22 @@ Usage:
   python resolve_host_genomes.py --samples samples.tsv --outdir OUT \
          --sources refseq genbank --fallback species genus family order
 """
-import argparse, csv, json, sys, time, urllib.request, urllib.parse
+import argparse, csv, json, os, sys, time, urllib.request, urllib.parse
 API = "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/taxon"
 TAX = "https://api.ncbi.nlm.nih.gov/datasets/v2/taxonomy/taxon"
 LEVELRANK = {"Complete Genome": 4, "Chromosome": 3, "Scaffold": 2, "Contig": 1}
+DEFAULT_PINNED = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "pinned_genomes.tsv")
+
+def load_pinned(path):
+    """species -> (genome_path, label) for hosts that use a fixed local genome (not downloaded)."""
+    pinned = {}
+    try:
+        for line in open(path or DEFAULT_PINNED):
+            if line.startswith("#") or not line.strip(): continue
+            f = line.rstrip("\n").split("\t")
+            if len(f) >= 2 and f[0].strip(): pinned[f[0].strip()] = (f[1].strip(), f[2].strip() if len(f) > 2 else "")
+    except FileNotFoundError: pass
+    return pinned
 
 def get(url):
     for a in range(4):
@@ -83,11 +95,16 @@ def main():
     ap.add_argument("--outdir", required=True)
     ap.add_argument("--sources", nargs="+", default=["refseq", "genbank"])
     ap.add_argument("--fallback", nargs="+", default=["species", "genus", "family", "order"])
+    ap.add_argument("--pinned", default=None, help="TSV of species to SKIP (use a fixed local genome); default config/pinned_genomes.tsv (human+mouse T2T)")
     ap.add_argument("--sleep", type=float, default=0.4)
     a = ap.parse_args()
-    import os; os.makedirs(a.outdir, exist_ok=True)
+    os.makedirs(a.outdir, exist_ok=True)
     hosts = load_hosts(a.samples)
-    print(f"{len(hosts)} unique host species", flush=True)
+    pinned = load_pinned(a.pinned)
+    dropped = sorted({h for h in list(hosts) if h in pinned})
+    for h in dropped: del hosts[h]
+    if dropped: print(f"pinned hosts skipped (use a fixed local genome, not downloaded): {dropped}", flush=True)
+    print(f"{len(hosts)} unique host species to resolve from NCBI", flush=True)
 
     cache = {}
     def resolve_cached(taxon, source):

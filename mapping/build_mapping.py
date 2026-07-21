@@ -20,6 +20,18 @@ Usage:
 """
 import argparse, csv, glob, os, re
 from collections import defaultdict
+DEFAULT_PINNED = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "pinned_genomes.tsv")
+
+def load_pinned(path):
+    """species -> (genome_path, label); these hosts use a fixed local genome (human/mouse T2T by default)."""
+    pinned = {}
+    try:
+        for line in open(path or DEFAULT_PINNED):
+            if line.startswith("#") or not line.strip(): continue
+            f = line.rstrip("\n").split("\t")
+            if len(f) >= 2 and f[0].strip(): pinned[f[0].strip()] = (f[1].strip(), f[2].strip() if len(f) > 2 else "")
+    except FileNotFoundError: pass
+    return pinned
 
 def load_resolved(path):
     d = {}
@@ -43,8 +55,10 @@ def main():
     ap.add_argument("--resolved-dir", default=None, help="default <outdir>/manifests")
     ap.add_argument("--sources", nargs="+", default=["refseq", "genbank"])
     ap.add_argument("--top-n", type=int, default=10, help="samples kept per host (0 = keep all)")
+    ap.add_argument("--pinned", default=None, help="TSV of species using a fixed local genome; default config/pinned_genomes.tsv (human+mouse T2T)")
     ap.add_argument("--output", default=None)
     a = ap.parse_args()
+    pinned = load_pinned(a.pinned)
     gdir = a.genome_dir or f"{a.outdir}/host_genomes"
     rdir = a.resolved_dir or f"{a.outdir}/manifests"
     out = a.output or f"{a.outdir}/master_index.tsv"
@@ -89,15 +103,23 @@ def main():
         rec = dict(sample_id=sid, host_species=sp, host_species_canonical=can, host_taxid=tid,
                    priority="", layout=layout, R1_path=r1, R2_path=r2,
                    status=("complete" if r1 else "no_reads"), notes=("host_unresolved" if sp.lower() in ("", "unknown") else ""))
-        fpaths = []
-        for s in a.sources:
-            g = resolved.get(s, {}).get(sp, {})
-            acc = g.get("accession", ""); gp = GIDX.get(acc, "")
-            rec[f"{s}_accession"] = acc; rec[f"{s}_match_rank"] = g.get("match_rank", ""); rec[f"{s}_genome_path"] = gp
-            if gp: fpaths.append(gp)
-        rec["host_filtration_genome_paths"] = ";".join(fpaths)
-        rec["n_filtration_genomes"] = str(len(fpaths))
-        if not fpaths and rec["notes"] != "host_unresolved": rec["notes"] = "no_host_genome"
+        if sp in pinned:
+            gpath, label = pinned[sp]
+            for s in a.sources:
+                rec[f"{s}_accession"] = ""; rec[f"{s}_match_rank"] = "pinned"; rec[f"{s}_genome_path"] = ""
+            rec["host_filtration_genome_paths"] = gpath
+            rec["n_filtration_genomes"] = "1"
+            rec["notes"] = f"pinned:{label}" if label else "pinned"
+        else:
+            fpaths = []
+            for s in a.sources:
+                g = resolved.get(s, {}).get(sp, {})
+                acc = g.get("accession", ""); gp = GIDX.get(acc, "")
+                rec[f"{s}_accession"] = acc; rec[f"{s}_match_rank"] = g.get("match_rank", ""); rec[f"{s}_genome_path"] = gp
+                if gp: fpaths.append(gp)
+            rec["host_filtration_genome_paths"] = ";".join(fpaths)
+            rec["n_filtration_genomes"] = str(len(fpaths))
+            if not fpaths and rec["notes"] != "host_unresolved": rec["notes"] = "no_host_genome"
         rec["_depth"] = depth(r1) + depth(r2); rec["_sp"] = sp
         rows.append(rec)
 

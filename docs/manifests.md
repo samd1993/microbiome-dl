@@ -34,6 +34,11 @@ See `examples/samples.tsv`.
 - **`genomes_download.tsv`** — deduped list for `download_genomes.sbatch`: `accession species assembly_name target_filename ftp_url`
 - **`host_species_canonical.tsv`** — `host_species → host_species_canonical + host_taxid` (collapses synonyms)
 
+Species in **`config/pinned_genomes.tsv`** (columns: `host_species  genome_path  label`; human + mouse
+T2T by default) are **skipped** by the resolver/downloader and instead get their fixed local genome in
+`master_index.tsv` (`*_match_rank=pinned`, `host_filtration_genome_paths` = your local path). Edit the
+paths there and add any host you want to pin.
+
 ## Output: `master_index.tsv` (made by `mapping/build_mapping.py`)
 One row per sample — the file your pipeline reads. Key columns: `sample_id, host_species,
 host_species_canonical, host_taxid, priority (top-N-per-host), layout, R1_path, R2_path,

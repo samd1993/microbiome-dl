@@ -1,0 +1,6 @@
+# Pinned host genomes: species listed here are NOT resolved/downloaded from NCBI — the pipeline
+# uses the single local FASTA you point to (e.g. a T2T reference you keep once and reuse).
+# Human and mouse are pinned by default (T2T). Add rows for any host you want to pin.
+# Columns: host_species <tab> genome_path <tab> label     (lines starting with # are ignored)
+Homo sapiens	/refs/T2T-CHM13v2.0.fna.gz	T2T-CHM13v2.0
+Mus musculus	/refs/T2T-mouse.fna.gz	T2T mouse

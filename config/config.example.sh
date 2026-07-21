@@ -48,3 +48,8 @@ export PER_RUN_MAX="${PER_RUN_MAX:-28800}"  # per-file wall cap (s) for slow mir
 export GENOME_SOURCES="${GENOME_SOURCES:-refseq genbank}"   # any of: refseq genbank
 export FALLBACK_RANKS="${FALLBACK_RANKS:-species genus family order}"  # match order
 export TOP_N_PER_HOST="${TOP_N_PER_HOST:-10}"   # subsample cap per host species (0 = keep all)
+
+# Pinned hosts (config/pinned_genomes.tsv): species listed there are NOT downloaded/resolved —
+# the pipeline uses the fixed local genome you point to. Human + mouse are pinned to T2T by default;
+# edit that file's paths (and add hosts) as needed. Both python tools read it automatically (--pinned).
+export PINNED_GENOMES="${PINNED_GENOMES:-config/pinned_genomes.tsv}"

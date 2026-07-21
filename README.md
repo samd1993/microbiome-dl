@@ -13,6 +13,7 @@ tidy mapping table.
 ## What it does
 1. **Reads** — `fastq-dl` (ENA-first, SRA fallback, md5-checked), resume-safe Slurm array jobs. Optional GSA/CNGB downloader for Chinese-archive accessions.
 2. **Host genomes** — resolves a genome per host species from NCBI (RefSeq and/or GenBank), matching **Species → Genus → Family → Order** and picking the *representative*, most-contiguous assembly; downloads via `aria2c`. Also records the NCBI-canonical name + taxid (collapses synonyms).
+   - **Pinned hosts** (`config/pinned_genomes.tsv`): species you filter against a fixed local reference are **skipped** (not resolved/downloaded). **Human and mouse are pinned to T2T by default** — set the paths in that file. Add any host you want to pin. So a human and/or mouse study downloads reads only; a mixed study still auto-resolves the non-pinned hosts.
 3. **Mapping** — one row per sample with local read paths, host-genome path(s) to filter against, and a `priority` flag = **top-N samples per host** (≤N keep all, >N keep the N most-sequenced).
 
 ## Requirements
